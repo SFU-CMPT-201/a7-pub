@@ -202,11 +202,11 @@ The purpose of this is to explain the following points.
 * The variable `heap_ptr` is a local variable and a pointer.
 * You use `heap_ptr` to access the heap. In other words, your access to the heap is indirect through
   a pointer located outside the heap.
-* The value of `heap_ptr` is an address within the heap. The code is asking `calloc()` to allocate
-  one `int`-sized block of memory. Then `calloc()` returns a memory address that points to the
-  newly-allocated 4 bytes of memory in the heap.
+* The value of `heap_ptr` is an address within the range of addresses of the heap segment. The code
+  is asking `calloc()` to allocate one `int`-sized block of memory. Then `calloc()` returns a memory
+  address that points to the newly-allocated 4 bytes of memory in the heap.
 * The address of the variable `heap_ptr` is a higher value than the value of the variable. This is
-  because the stack is located above the heap in memory.
+  because the stack occupies higher addresses than the heap in memory.
 
 The visualization of this is the following.
 
@@ -240,11 +240,12 @@ This is different from using other segments with local and global variables. You
 deallocate memory space for local or global variables by calling allocation or deallocation
 functions. You just declare those variables and the memory space is managed for you. If you remember
 from earlier assignments, global variables use the BSS and the data segments, and they are there
-*all the time*. The segments get allocated when the program starts to run and they never get
-deallocated. Local variables, on the other hand, use a stack frame and every time a new function is
-called, a stack frame is allocated for the local variables in the function. When the function
-execution is done, the entire stack frame is popped (i.e., deallocated) from the stack. Because of
-this, you do not need to worry about allocating or deallocating memory space for local variables.
+*all the time*. The BSS and data segments get allocated when the program starts to run and they
+never get deallocated. Local variables, on the other hand, use a stack frame and every time a new
+function is called, a stack frame is allocated for the local variables in the function. When the
+function execution is done, the entire stack frame is popped (i.e., deallocated) from the stack.
+Because of this, you do not need to worry about allocating or deallocating memory space for local
+variables.
 
 Since you have to manually manage the heap memory, it is extremely easy to make mistakes and manage
 the heap incorrectly. Let's do a few activities to understand this more.
@@ -253,8 +254,7 @@ the heap incorrectly. Let's do a few activities to understand this more.
 
 The most common mistake is called *memory leak*, which occurs when you allocate memory in the heap
 but don't deallocate it properly. To understand this more, let's create a file named `memory_leak.c`
-and add a new target `memory_leak` in the Makefile you created it earlier. Write the following
-program.
+and add a new target `memory_leak` in the Makefile you created earlier. Write the following program.
 
 ```c
 #include <stdio.h>
@@ -304,8 +304,8 @@ is still marked as "in use" and the memory allocator will not see it as availabl
 words, by not freeing the memory properly, we have effective reduced the size of memory usable by
 the memory allocator. In this particular example, this is less of a problem because the program will
 terminate soon after the function returns. However, if this is a long-running program and
-`readUserInput()` is repeatedly called with failed `fgets()`, we will keep reducing the size of heap
-memory usable by the memory allocator.
+`readUserInput()` is repeatedly called with failed `fgets()`, we will keep reducing the size of the
+heap memory usable by the memory allocator.
 
 Note that the above code demonsrates only one example. There are other ways to leak memory, e.g.,
 assigning a new value to a pointer without freeing the memory it previously pointed to.
@@ -357,17 +357,17 @@ If you examine all possible paths as the diagram shows, you can check which path
 As a side note, it is generally not a good idea to allocate a buffer and return it inside a
 function. It is much better to receive an allocated buffer as an argument, fill it, and return it.
 This makes it clear which function needs to take care of buffer allocation, deallocation, and
-errors. In the above program, this responsibility is spread across both `main()` and
+errors. In the above program, this responsibility is distributed across both `main()` and
 `readUserIput()`, which makes it difficult for a programmer to mentally keep track.
 
 ### Use after free, double free, and null pointer dereference
 
-*Use after free* refers to a case where you free a previously-allocated memory block then access it
-again by mistake. *Double free* refers to a case where you free a previously-allocated memory block
-and then free it again by mistake. *Null pointer dereference* refers to a case where you use a null
-pointer by mistake as if it had a regular address value. All of these are *undefined behavior* and
-common sources of bugs and security vulnerabilities. It is absolutely critical to avoid these issues
-when you write software.
+*Use after free* refers to a case where you free a previously-allocated memory block and then access
+it again by mistake. *Double free* refers to a case where you free a previously-allocated memory
+block and then free it again by mistake. *Null pointer dereference* refers to a case where you use a
+null pointer by mistake as if it had a regular address value. All of these are *undefined behavior*
+and common sources of bugs and security vulnerabilities. It is absolutely critical to avoid these
+issues when you write your code.
 
 To experiment with one of the problems, use after free, create a file named `use_after_free.c` and
 also add a Makefile target with the same name `use_after_free`. Enable `AddressSanitizer` for Clang
@@ -402,9 +402,10 @@ Compile and run it. `AddressSanitizer` should detect a problem and display an er
 regarding `heap-use-after-free`.
 
 This is a contrived example to just demonstrate the problem. However, it is not difficult to imagine
-a scenario where you pass a buffer to a function, and the function deallocates the buffer by
-mistake. When the function returns, you might still use the buffer without realizing that the buffer
-has been freed.
+a scenario where you pass a buffer to a function, and the function deallocates the buffer either by
+mistake or as part of its normal execution. When the function returns, you might still use the
+buffer without realizing that the buffer has been freed. (Again, it is generally not a good idea to
+distribute the buffer management responsibility across different functions.)
 
 You can easily come up with simple examples of double free and null pointer dereference to
 experiment with those problems and see if our linters and sanitizers can detect those problems. You
@@ -413,7 +414,7 @@ are highly encouraged to do so.
 ## Memory safety
 
 Generally, all of the problems related to memory we discussed so far are called *memory safety*
-issues. This includes stack corruption, buffer overflow, uninitialized variable access, memory leak,
+issues. These include stack corruption, buffer overflow, uninitialized variable access, memory leak,
 use after free, double free, and null pointer dereference. All of these issues lead to bugs and
 vulnerabilities and we need to make every effort to avoid such problems.
 
@@ -430,7 +431,7 @@ The best practices to avoid these problems are as follows.
 * Employ static analysis tools (e.g., linters) and memory checkers (e.g., sanitizers) to identify
   potential issues.
 
-Now, you can stop recording, and submit all the files you created for this assignment including
+Now, you can stop recording and submit all the files you created for this assignment including
 `.record/` and `.nvim/`.
 
 # Next steps
