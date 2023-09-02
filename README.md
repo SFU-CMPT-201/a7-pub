@@ -137,7 +137,7 @@ void free(void *ptr);
 
 Here are a few important points about these functions.
 
-* `malloc()` takes a single argument, `size`, and allocates `size` bytes of memory in the heap.
+* `malloc()` takes a single argument, `size`, and allocates `size` bytes of memory on the heap.
 * `calloc()`, on the other hand, takes two arguments, `nmemb` and `size`, and allocates an array of
   `nmemb` elements, where each element is of `size` bytes.
 * `realloc()` takes two arguments, `ptr` and `size`, and changes the size of previously allocated
@@ -153,7 +153,7 @@ Here are a few important points about these functions.
   appropriately.
 * As the diagram above shows, the heap segment is placed in between the BSS segment and the memory
   mapping segment, and it grows upward. This means that as your program requests access to more
-  memory in the heap using functions like `malloc()`, the size of the heap grows from a lower
+  memory on the heap using functions like `malloc()`, the size of the heap grows from a lower
   address to a higher address.
 * Under the hood, `malloc()`, `free()`, etc. are all part of `libc` (the C Standard Library) and
   allow your code to interact with a *memory allocator* implemented in `libc`. Memory allocation
@@ -204,7 +204,7 @@ The purpose of this is to explain the following points.
   a pointer located outside the heap.
 * The value of `heap_ptr` is an address within the range of addresses of the heap segment. The code
   is asking `calloc()` to allocate one `int`-sized block of memory. Then `calloc()` returns a memory
-  address that points to the newly-allocated 4 bytes of memory in the heap.
+  address that points to the newly-allocated 4 bytes of memory on the heap.
 * The address of the variable `heap_ptr` is a higher value than the value of the variable. This is
   because the stack occupies higher addresses than the heap in memory.
 
@@ -232,7 +232,7 @@ As shown, your access to the heap is via a pointer variable.
 ### Manual memory management and memory allocator
 
 Using the heap in a C/C++ program is considered *manual* memory management. This is because you need
-to write a piece of code yourself to request memory allocation in the heap (by calling functions
+to write a piece of code yourself to request memory allocation on the heap (by calling functions
 like `malloc()`). In addition, you need to write a piece of code yourself to release the memory (by
 calling `free()`).
 
@@ -252,7 +252,7 @@ the heap incorrectly. Let's do a few activities to understand this more.
 
 ### Memory leak
 
-The most common mistake is called *memory leak*, which occurs when you allocate memory in the heap
+The most common mistake is called *memory leak*, which occurs when you allocate memory on the heap
 but don't deallocate it properly. To understand this more, let's create a file named `memory_leak.c`
 and add a new target `memory_leak` in the Makefile you created earlier. Write the following program.
 
