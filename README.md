@@ -408,8 +408,8 @@ buffer without realizing that the buffer has been freed. (Again, it is generally
 distribute the buffer management responsibility across different functions.)
 
 You can easily come up with simple examples of double free and null pointer dereference to
-experiment with those problems and see if our linters and sanitizers can detect those problems. You
-are highly encouraged to do so.
+experiment with those problems and see if our linters and sanitizers can detect those problems. We
+highly encourage you to do so.
 
 ## Memory safety
 
