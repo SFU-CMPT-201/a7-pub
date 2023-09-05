@@ -418,7 +418,7 @@ issues. These include stack corruption, buffer overflow, uninitialized variable 
 use after free, double free, and null pointer dereference. All of these issues lead to bugs and
 vulnerabilities and we need to make every effort to avoid such problems.
 
-The best practices to avoid these problems are as follows.
+The best practices to avoid memory safety problems are as follows.
 
 * Always initialize pointers and variables before using them.
 * Make sure to check whether or not a pointer is NULL before using it.
@@ -430,6 +430,14 @@ The best practices to avoid these problems are as follows.
 * Avoid using pointers to already-deallocated memory.
 * Employ static analysis tools (e.g., linters) and memory checkers (e.g., sanitizers) to identify
   potential issues.
+
+It is worth noting that directly manipulating memory is a feature only available in low-level,
+systems programming languages like C/C++, Rust, etc. It is not possible in other higher-level
+languages like Java or Python. These higher-level languages come with a component called *language
+runtime* that performs many tasks on behalf of your program including memory management. This is a
+tradeoff---they provide convenience and more safety at the expense of performance and flexibility.
+Therefore, when you choose a language for a programming task, you need to make a decision based on
+the features your task requires.
 
 Now, you can stop recording and submit all the files you created for this assignment including
 `.record/` and `.nvim/`.
