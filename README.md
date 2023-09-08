@@ -1,4 +1,4 @@
-# Assignment 8: Memory layout (continued)
+# Assignment 8: Memory Layout (Continued)
 
 This assignment continues our discussion on the memory layout. From the diagram below, we covered
 the text segment, the data segment, the BSS segment, and the stack segment in the previous
@@ -58,7 +58,7 @@ in this assignment.
 '──────────────────────'
 ```
 
-## Kernel address space
+## Kernel Address Space
 
 As discussed in the first lecture, a typical operating system operates in two modes---kernel mode
 and user mode. User applications, such as your web browser, terminal, file explorer, etc., all run
@@ -69,7 +69,7 @@ the program with a segmentation fault. Although there is much to be said about t
 space, we will not get into the discussion because the scope of this course is user-level systems
 programming.
 
-## Task 0: Understanding the memory mapping segment
+## Task 0: Understanding the Memory Mapping Segment
 
 Memory mapping is also a big topic and we will discuss it separately later in the semester. For now,
 let's look at one important component in this region, which is shared libraries. If you remember
@@ -119,7 +119,7 @@ As the addresses show, `printf()` is located in between `main()` and `stack_var`
 
 (You can stop recording and come back later, or continue on.)
 
-## Task 1: Understanding the heap segment
+## Task 1: Understanding the Heap Segment
 
 *The heap segment* or simply *the heap* is a region of memory used when a program calls memory
 allocation functions. As you may know, there are four popular C standard library functions related
@@ -166,7 +166,7 @@ Here are a few important points about these functions.
 Let's do a few activities to understand the heap more. Make sure you `record` if you are not
 recording already.
 
-### Accessing the heap
+### Accessing the Heap
 
 The first important thing to understand regarding the heap is that you need to use a *pointer
 variable* to access the heap, i.e., your access to the heap is *indirect*. This means that you use a
@@ -229,7 +229,7 @@ The visualization of this is the following.
 
 As shown, your access to the heap is via a pointer variable.
 
-### Manual memory management and memory allocator
+### Manual Memory Management and Memory Allocator
 
 Using the heap in a C/C++ program is considered *manual* memory management. This is because you need
 to write a piece of code yourself to request memory allocation on the heap (by calling functions
@@ -250,7 +250,7 @@ variables.
 Since you have to manually manage the heap memory, it is extremely easy to make mistakes and manage
 the heap incorrectly. Let's do a few activities to understand this more.
 
-### Memory leak
+### Memory Leak
 
 The most common mistake is called *memory leak*, which occurs when you allocate memory on the heap
 but don't deallocate it properly. To understand this more, let's create a file named `memory_leak.c`
@@ -360,7 +360,7 @@ This makes it clear which function needs to take care of buffer allocation, deal
 errors. In the above program, this responsibility is distributed across both `main()` and
 `readUserIput()`, which makes it difficult for a programmer to mentally keep track.
 
-### Use after free, double free, and null pointer dereference
+### Use After Free, Double Free, and Null Pointer Dereference
 
 *Use after free* refers to a case where you free a previously-allocated memory block and then access
 it again by mistake. *Double free* refers to a case where you free a previously-allocated memory
@@ -411,7 +411,7 @@ You can easily come up with simple examples of double free and null pointer dere
 experiment with those problems and see if our linters and sanitizers can detect those problems. We
 highly encourage you to do so.
 
-## Memory safety
+## Memory Safety
 
 Generally, all of the problems related to memory we discussed so far are called *memory safety*
 issues. These include stack corruption, buffer overflow, uninitialized variable access, memory leak,
@@ -442,7 +442,7 @@ the features your task requires.
 Now, you can stop recording and submit all the files you created for this assignment including
 `.record/` and `.nvim/`.
 
-# Next steps
+# Next Steps
 
 You need to accept the invite for the next assignment (A9).
 
