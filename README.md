@@ -1,4 +1,4 @@
-# Assignment 8: Memory Layout (Continued)
+# Assignment 7: Memory Layout (Continued)
 
 This assignment continues our discussion on the memory layout. From the diagram below, we covered
 the text segment, the data segment, the BSS segment, and the stack segment in the previous
