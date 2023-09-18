@@ -311,9 +311,11 @@ Note that the above code demonsrates only one example. There are other ways to l
 assigning a new value to a pointer without freeing the memory it previously pointed to.
 
 Since this is a common problem, `AddressSanitizer` implements checks for it. As usual, you can add
-`-fsanitize=address` as a Clang option to enable it. Generally, you should use this and other
-sanitizers when developing software since they can detect common and serious problems such as memory
-leaks.
+`-fsanitize=address` as a Clang option to enable it. (Another well-known tool you can use is
+[Valgrind](https://valgrind.org/), but `AddressSanitizer` does similar things and [is often much
+faster](https://shorturl.at/BCL15).) Generally, you should use sanitizers such as
+`AddressSanitizer`, `UndefinedBehaviorSanitizer`, `ThreadSanitizer`, when developing software since
+they can detect common and serious problems such as memory leaks.
 
 In order to avoid leaking memory, you need to trace *all possible execution paths* in your program
 and make sure that you free memory on all of those. Programs have multiple possible execution paths
