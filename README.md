@@ -86,7 +86,7 @@ you are doing this in the same directory as this `README.md` is in. Also make su
 ```c
 #include <stdio.h>
 
-int foo(void) {
+void foo(void) {
   printf("foo() address:      %p\n", foo);
 }
 
