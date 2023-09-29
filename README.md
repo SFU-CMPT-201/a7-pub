@@ -137,9 +137,11 @@ void free(void *ptr);
 
 Here are a few important points about these functions.
 
-* `malloc()` takes a single argument, `size`, and allocates `size` bytes of memory on the heap.
+* `malloc()` takes a single argument, `size`, and allocates `size` bytes of memory on the heap. It
+  returns `void *`, which is a generic memory address pointer.
 * `calloc()`, on the other hand, takes two arguments, `nmemb` and `size`, and allocates an array of
-  `nmemb` elements, where each element is of `size` bytes.
+  `nmemb` elements, where each element is of `size` bytes. It also returns `void *`. Again, `void *`
+  is a generic memory address pointer.
 * `realloc()` takes two arguments, `ptr` and `size`, and changes the size of previously allocated
   memory pointed to by `ptr` to `size` bytes.
 * `free()` takes a single argument, `ptr`, and frees memory pointed to by `ptr`.
@@ -261,10 +263,10 @@ and add a new target `memory_leak` in the Makefile you created earlier. Write th
 #include <stdlib.h>
 #include <string.h>
 
-char *readUserInput() {
+char *read_user_input() {
   // Allocate a buffer
-  size_t bufferSize = 100;
-  char *buffer = (char *)malloc(bufferSize * sizeof(char));
+  size_t buffer_size = 100;
+  char *buffer = (char *)malloc(buffer_size * sizeof(char));
 
   // Check if the allocation was successful
   if (buffer == NULL) {
@@ -274,7 +276,7 @@ char *readUserInput() {
 
   // Read a user input
   printf("Enter your input: ");
-  if (fgets(buffer, bufferSize, stdin) == NULL) {
+  if (fgets(buffer, buffer_size, stdin) == NULL) {
     perror("fgets() failed");
     return NULL;
   }
@@ -284,7 +286,7 @@ char *readUserInput() {
 }
 
 int main() {
-  char *input = readUserInput();
+  char *input = read_user_input();
 
   if (input != NULL) {
     printf("You entered: %s\n", input);
@@ -298,16 +300,16 @@ int main() {
 Once you write the program, our linter will immediately complain that there is a potential leak and
 the location is inside the `fgets()`'s `if` block. If you look at the code carefully, you will also
 realize that we are not freeing the memory correctly there. The function allocates memory with
-`malloc()` but when `fgets()` fails to read a user input, the whole `readUserInput()` function
+`malloc()` but when `fgets()` fails to read a user input, the whole `read_user_input()` function
 returns `NULL` without freeing the memory. What this means is that the `malloc()`-allocated memory
 is still marked as "in use" and the memory allocator will not see it as available memory. In other
-words, by not freeing the memory properly, we have effective reduced the size of memory usable by
+words, by not freeing the memory properly, we have effectively reduced the size of memory usable by
 the memory allocator. In this particular example, this is less of a problem because the program will
 terminate soon after the function returns. However, if this is a long-running program and
-`readUserInput()` is repeatedly called with failed `fgets()`, we will keep reducing the size of the
-heap memory usable by the memory allocator.
+`read_user_input()` is repeatedly called with failed `fgets()`, we will keep reducing the size of
+the heap memory usable by the memory allocator.
 
-Note that the above code demonsrates only one example. There are other ways to leak memory, e.g.,
+Note that the above code demonstrates only one example. There are other ways to leak memory, e.g.,
 assigning a new value to a pointer without freeing the memory it previously pointed to.
 
 Since this is a common problem, `AddressSanitizer` implements checks for it. As usual, you can add
@@ -315,13 +317,16 @@ Since this is a common problem, `AddressSanitizer` implements checks for it. As 
 [Valgrind](https://valgrind.org/), but `AddressSanitizer` does similar things and [is often much
 faster](https://shorturl.at/BCL15).) Generally, you should use sanitizers such as
 `AddressSanitizer`, `UndefinedBehaviorSanitizer`, `ThreadSanitizer`, when developing software since
-they can detect common and serious problems such as memory leaks.
+they can detect common and serious problems such as memory leaks. However, remember from earlier
+assignments that sanitizers only detect problems at run time *if they get triggered*. Thus, you also
+need to provide right inputs that trigger problems, with separate mechanisms such as fuzzing or
+manually-crafted test cases.
 
 In order to avoid leaking memory, you need to trace *all possible execution paths* in your program
 and make sure that you free memory on all of those. Programs have multiple possible execution paths
 when they have conditionals or loops. We can easily visualize this by drawing a diagram that shows
 all possible execution paths. The diagram below is an example of the above function
-`readUserInput()`.
+`read_user_input()`.
 
 ```bash
                      +-----------------+
@@ -360,7 +365,7 @@ As a side note, it is generally not a good idea to allocate a buffer and return 
 function. It is much better to receive an allocated buffer as an argument, fill it, and return it.
 This makes it clear which function needs to take care of buffer allocation, deallocation, and
 errors. In the above program, this responsibility is distributed across both `main()` and
-`readUserIput()`, which makes it difficult for a programmer to mentally keep track.
+`read_user_input()`, which makes it difficult for a programmer to mentally keep track.
 
 ### Use After Free, Double Free, and Null Pointer Dereference
 
