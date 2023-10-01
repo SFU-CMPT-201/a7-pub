@@ -441,10 +441,11 @@ The best practices to avoid memory safety problems are as follows.
 It is worth noting that directly manipulating memory is a feature only available in low-level,
 systems programming languages like C/C++, Rust, etc. It is not possible in other higher-level
 languages like Java or Python. These higher-level languages come with a component called *language
-runtime* that performs many tasks on behalf of your program including memory management. This is a
-tradeoff---they provide convenience and more safety at the expense of performance and flexibility.
-Therefore, when you choose a language for a programming task, you need to make a decision based on
-the features your task requires.
+runtime* that performs many tasks on behalf of your program including memory management. Although
+they do not completely eliminate memory safety problems (e.g., memory leak), they do improve memory
+safety significantly. This is a trade-off---higher-level languages provide convenience and more
+safety at the expense of performance and flexibility. Therefore, when you choose a language for a
+programming task, you need to make a decision based on the features your task requires.
 
 Now, you can stop recording and submit all the files you created for this assignment including
 `.record/` and `.nvim/`.
