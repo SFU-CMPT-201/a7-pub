@@ -149,7 +149,7 @@ Here are a few important points about these functions.
   `malloc()`-allocated memory is *undefined behavior* and returns garbage values, while reading
   `calloc()`-allocated memory returns 0. For `realloc()`, if the new size is larger than the old
   size, the newly-allocated portion is not initialized.
-* `malloc()`, `calloc()`, and `realloc() all return a pointer to the *lowest* address of the
+* `malloc()`, `calloc()`, and `realloc()` all return a pointer to the *lowest* address of the
   allocated memory. On error, or the requested size is 0, they return `NULL`. Thus, it is *very*
   important to check if `malloc()`, `calloc()`, or `realloc()` returns `NULL` and handle it
   appropriately.
