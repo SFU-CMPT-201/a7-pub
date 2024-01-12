@@ -447,14 +447,341 @@ safety significantly. This is a trade-off---higher-level languages provide conve
 safety at the expense of performance and flexibility. Therefore, when you choose a language for a
 programming task, you need to make a decision based on the features your task requires.
 
-Now, you can stop recording and submit all the files you created for this assignment including
-`.record/` and `.nvim/`.
+# Assignment 8: Data Types, Alignment, Padding, and Packing
 
-# Next Steps
+One of the trickiest parts of writing low-level programs that directly manipulate memory is that
+often times, you need to think about byte-level details. In the previous assignments, we
+side-stepped this issue because we mostly used a single-byte type such as `uint8_t`. However, C has
+many types of various sizes and also allows you to define your own custom types with `struct`,
+`union`, `enum`, and `typedef`. When you use these types, it is important to understand how these
+types are represented in memory and how to use these using pointers. In this assignment, you will
+learn more about this.
 
-You need to accept the invite for the next assignment (A8).
+## Task 0: Representing Data Types in Memory
 
-* Get the URL for A8. Go to the URL on your browser.
-* Accept the invite for Assignment 8 (A8).
-* If you are not in `units/03-memory` directory, go to that directory.
-* Clone the assignment repo.
+One way to conceptualize a type is to think of it as imposing a structure over *raw bytes*. (We're
+using "structure" in a general sense here, not as a reference to `struct`.) In other words, if you
+have a consecutive series of bytes, how you interpret the bytes depends on the type you use to
+access it. Even with the same set of bytes, you can interpret it differently using different types.
+Type casting allows you to achieve this, although it has limitations---it's not always possible to
+perform type casting on all types. For example, user-defined custom types like `struct` do not
+permit direct type casting. However, using pointers provides us with much more flexibility.
+
+To understand this, create a file named `types.c` and also a Makefile that includes a target named
+`types`. Make sure you `record` as well. Write the following program in `types.c`.
+
+```c
+#include <stdint.h>
+#include <stdio.h>
+
+struct as_struct {
+  uint16_t l2b; // the lowest two bytes
+  uint8_t n1b;  // the next one byte
+  uint8_t h1b;  // the highest one byte
+};
+
+union as_union {
+  uint16_t r2b; // reading two bytes
+  uint32_t r4b; // reading four bytes
+  uint8_t r1b;  // reading one byte
+};
+
+int main(void) {
+  uint32_t i = 0xBEEFCAFE;
+  uint16_t *ptr16 = (uint16_t *)&i;
+  struct as_struct *as = (struct as_struct *)&i;
+  union as_union *au = (union as_union *)&i;
+
+  printf("i: 0x%X\n", i);
+  printf("ptr16[0]: 0x%hX, ptr16[1]: 0x%hX\n", ptr16[0], ptr16[1]);
+  printf("lowest two bytes: 0x%hX, next one byte: 0x%hhX, highest one byte: "
+         "0x%hhX\n",
+         as->l2b, as->n1b, as->h1b);
+  printf(
+      "reading four bytes: 0x%X, reading two bytes: 0x%hX, reading one byte: "
+      "0x%hhX\n",
+      au->r4b, au->r2b, au->r1b);
+}
+```
+
+Compile and run the code. You should get the following output:
+
+```bash
+i: 0xBEEFCAFE
+ptr16[0]: 0xCAFE, ptr16[1]: 0xBEEF
+lowest two bytes: 0xCAFE, next one byte: 0xEF, highest one byte: 0xBE
+reading four bytes: 0xBEEFCAFE, reading two bytes: 0xCAFE, reading one byte: 0xFE
+```
+
+In the code, we interpret the same block of 4 bytes in four different ways by imposing four
+different structures (i.e., types) over the block. The first is `uint32_t`, the second is an array
+of `uint16_t`, the third is a `struct`, and the fourth is a `union`. The diagram below visualizes
+this. The leftmost side shows the highest address byte and the rightmost side shows the lowest
+address byte.
+
+```bash
+                   (highest)                    (lowest)
+As raw (four) bytes:   | 0xBE | 0xEF | 0xCA | 0xFE |
+
+As `uint32_t`:         |------------ i ------------|
+
+As `uint16_t`:         |-- ptr16[1] -|-- ptr16[0] -|
+
+As `struct as_struct`: |- h1b-|- n1b-|---- l2b ----|
+
+As `union as_union`:   |----------- r4b -----------|
+                                     |---- r2b ----|
+                                            |- r1b-|
+```
+
+Before we examine each case, let's first discuss the rule that determines how we read the bytes in a
+*single* type. This rule is called *byte ordering* or *endianness*. There are two popular approaches
+to this, called *little-endian* and *big-endian*.
+
+* In a little-endian system, the least significant byte (the "little end") of a multi-byte value is
+  stored at the lowest memory address.
+* In a big-endian system, the most significant byte (the "big end") of a multi-byte value is stored
+  at the lowest memory address.
+
+Our VM is a little-endian system because it is based on x86-64. Thus, `int i` in the above code is
+store as shown below (which is also shown in the diagram above). The least significant byte is
+stored at the lowest memory address.
+
+```bash
+                   (highest)                    (lowest)
+As raw (four) bytes:   | 0xBE | 0xEF | 0xCA | 0xFE |
+```
+
+If it were a big-endian system, it would look like the following.
+
+```bash
+                   (highest)                    (lowest)
+As raw (four) bytes:   | 0xFE | 0xCA | 0xEF | 0xBE |
+```
+
+This rule applies not only to `int` but also to all other multi-byte types, e.g., `short`,
+`int16_t`, `long`, etc. However, it is only for a single type, not for a composite type such as
+`struct`.
+
+Now, let's go back to our code and examine the four cases of interpreting bytes.
+
+* `uint32_t i`: In the code, we first define a 4-byte variable (`i`) and initialize the
+  corresponding 4-byte block with the value of `0xBEEFCAFE`. This means that whenever we use `i`, we
+  access those 4 bytes as a single unit.
+* `uint16_t *ptr16 = (uint16_t *)&i`: By assigning the address of `i` to a `uint16_t` pointer
+  (`ptr16`), we are basically saying that we want to interpret the memory beginning at the address
+  of `i` as a 2-byte value (`uint16_t`). This means that when we access the memory pointed to by
+  `ptr16` (i.e., `*ptr16` or `ptr16[0]`), we access two bytes as a single unit. We can do this even
+  though those two bytes are part of the larger 4-byte block that belongs to `i`. Later in the code,
+  we even use `ptr16` as an array and access the next two bytes.
+* `struct as_struct *as`: In this case, we impose a 4-byte `struct` over the memory beginning at the
+  address of `i`. In C, the first member of a `struct` occupies the lowest address, while the last
+  member of a `struct` occupies the highest. Employing a `struct` in this manner enables us to group
+  individual bytes in different ways. In our example, we group the lowest two bytes together (as a
+  `uint16_t`, while keeping the highest two bytes separate (as a `uint8_t`).
+* `union as_union *au`: Similar to the `struct` case, we impose a 4-byte `union` over the memory
+  beginning at the address of `i`. Since all members of a `union` occupy the same memory space, each
+  member reads from the lowest byte.
+
+The following code demonstrates that we can do the exact same thing with heap-allocated memory. (You
+do not need to try the code.)
+
+```c
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+struct as_struct {
+  uint16_t l2b; // the lowest two bytes
+  uint8_t n1b;  // the next one byte
+  uint8_t h1b;  // the highest one byte
+};
+
+union as_union {
+  uint16_t r2b; // reading two bytes
+  uint32_t r4b; // reading four bytes
+  uint8_t r1b;  // reading one byte
+};
+
+int main(void) {
+  void *void_ptr = malloc(4);                           // Heap allocation of raw 4 bytes
+  uint32_t *ptr32 = (uint32_t *)void_ptr;               // Using uint32_t
+  uint16_t *ptr16 = (uint16_t *)void_ptr;               // Using uint16_t
+  struct as_struct *as = (struct as_struct *)void_ptr;  // Using struct as_struct
+  union as_union *au = (union as_union *)void_ptr;      // Using as_union
+  *ptr32 = 0xBEEFCAFE;
+
+  printf("*ptr32: 0x%X\n", *ptr32);
+  printf("ptr16[0]: 0x%hX, ptr16[1]: 0x%hX\n", ptr16[0], ptr16[1]);
+  printf("lowest two bytes: 0x%hX, next one byte: 0x%hhX, highest one byte: "
+         "0x%hhX\n",
+         as->l2b, as->n1b, as->h1b);
+  printf(
+      "reading four bytes: 0x%X, reading two bytes: 0x%hX, reading one byte: "
+      "0x%hhX\n",
+      au->r4b, au->r2b, au->r1b);
+}
+```
+
+The only difference between the above code and the code earlier is the use of the stack vs. the
+heap. In the code, we allocate 4 bytes in the heap and then use four different types to interpret
+the same bytes differently. The interpretations themselves are exactly the same as the earlier code.
+
+One important caveat here is that this kind of byte re-interpretation is *very rare* and you should
+avoid it unless it is absolutely necessary. We discuss it here to help you deepen your understanding
+of low-level memory manipulation. However, this often leads to brittle code that does not work
+across different platforms or when compiled with different compilers, which the next task discusses.
+
+## Task 1: Alignment, Padding, and Packing
+
+Another important aspect of low-level memory manipulation is memory alignment, padding, and packing,
+particularly related to `struct`s. Let's explore each of these concepts.
+
+### Memory Alignment and Padding
+
+Memory alignment refers to the requirement that certain data types should be stored in memory at
+addresses that are multiples of their size in bytes. This alignment requirement is imposed by
+hardware, and violating it can lead to performance penalties or even program crashes on some
+CPU architectures.
+
+For example, on our VM (based on x86-64):
+
+* A `char` can be stored at any memory address.
+* A `short` (2 bytes) should be stored at an address that is a multiple of 2 (2-byte aligned).
+* An `int` and a `float` (4 bytes) should be stored at an address that is a multiple of 4 (4-byte
+  aligned).
+* A `long`, a `double`, and any pointer type (8 bytes) should be stored at an address that is a
+  multiple of 8 (8-byte aligned).
+
+Padding, then, is the process of adding unused bytes (padding bytes) to a `struct` to satisfy
+alignment requirements. These padding bytes are inserted by the compiler to ensure that each member
+of the `struct` is properly aligned.
+
+To experiment with this, create a file named `alignment.c` and also a Makefile that includes a
+target named `alignment`. Make sure you `record` as well. Write the following program in
+`alignment.c`.
+
+```c
+#include <stdio.h>
+
+struct align_example {
+  char a;   // 1 byte
+  int b;    // 4 bytes (requires 4-byte alignment)
+  short c;  // 2 bytes (requires 2-byte alignemnt)
+  double d; // 8 bytes (requires 8-byte alignment)
+};
+
+void align(void) {
+  struct align_example ex = {'0', 0, 0, 0.1};
+
+  printf("sizeof(char): %lu, sizeof(int): %lu, sizeof(short): %lu, "
+         "sizeof(double): %lu\n",
+         sizeof(char), sizeof(int), sizeof(short), sizeof(double));
+  printf("ex.a address: %p\nex.b address: %p\nex.c address: %p\nex.d address: "
+         "%p\n",
+         (void *)&ex.a, (void *)&ex.b, (void *)&ex.c, (void *)&ex.d);
+  printf("sizeof(struct align_example): %lu\n", sizeof(struct align_example));
+}
+
+int main(void) { align(); }
+```
+
+Compile it and run it. You will get an output similar to the following:
+
+```bash
+sizeof(char): 1, sizeof(int): 4, sizeof(short): 2, sizeof(double): 8
+ex.a address: 0xfffffa151cd0
+ex.b address: 0xfffffa151cd4
+ex.c address: 0xfffffa151cd8
+ex.d address: 0xfffffa151ce0
+sizeof(struct align_example): 24
+```
+
+In the code, we print out the sizes of `char`, `int`, `short`, and `double` to confirm their sizes.
+
+The output shows that the compiler adds padding bytes between `a` and `b` to ensure that `b` is
+4-byte aligned, and between `c` and `d` to ensure that `d` is 8-byte aligned.
+
+* `ex.a` is at `0xfffffa151cd0` and it is a 1-byte type (`char`), but `ex.b` does not start at the
+  next byte (`0xfffffa151cd1`). Instead, it starts at `0xfffffa151cd4` due to the 4-byte alignment
+  requirement. (It is the next possible address that is a multiple of 4.)
+* Between `ex.b` and `ex.c`, there is no padding necessary because `ex.c` is a 2-byte type and the
+  next byte after `ex.b` (`0xfffffa151cd8`) satisfies the 2-byte alignment requirement, i.e., the
+  address is a multiple of 2.
+* `ex.c` is at `0xfffffa151cd8` and it is a 2-byte type, but `ex.d` does not start at
+  `0xfffffa151cda`. Instead, it starts at `0xfffffa151ce0` due to the 8-byte alignment requirement.
+  (It is the next possible address that is a multiple of 8.)
+* Hence, the size of this `struct` is larger than the sum of the individual members due to alignment
+  requirements.
+
+There are two important implications of this.
+
+* When you allocate a `struct` in the heap, you should not manually count the number of bytes based
+  on the members. You should always use `sizeof()`, e.g., `malloc(sizeof(struct
+  alignment_example))`.
+* This alignment and padding behavior depends on the compiler/platform/architecture. If your code
+  makes certain assumptions about this behavior, it is likely to not work if you use a different
+  compiler or run the code on a different platform. Thus, it is very important to understand this
+  clearly before doing anything with it (e.g., performing byte re-interpretation as we did earlier).
+
+### Packing
+
+Packing is the process of eliminating or minimizing padding within a `struct` to reduce its size in
+memory. This can be useful in situations where memory efficiency is critical, such as when dealing
+with data structures for file I/O or network communication.
+
+You can use compiler-specific directives or attributes to control packing. For example, in Clang,
+you can use `#pragma pack` to control `struct` packing.
+
+To experiment with this, add the following `struct` and function in the file you created earlier
+(`alignment.c`) and call the function from its `main()`.
+
+```c
+#pragma pack(push, 1) // Push current packing setting and set packing to 1 byte alignment
+struct pack_example {
+  char a;   // 1 byte
+  int b;    // 4 bytes (no padding now)
+  short c;  // 2 bytes
+  double d; // 8 bytes (no padding now)
+};
+#pragma pack(pop) // Restore previous packing setting
+
+void pack(void) {
+  struct pack_example ex = {'0', 0, 0, 0.1};
+
+  printf("ex.a address: %p\nex.b address: %p\nex.c address: %p\nex.d address: "
+         "%p\n",
+         (void *)&ex.a, (void *)&ex.b, (void *)&ex.c, (void *)&ex.d);
+  printf("sizeof(struct pack_example): %lu\n", sizeof(struct pack_example));
+}
+```
+
+Compile and run it. You should get an output similar to the following.
+
+```bash
+sizeof(char): 1, sizeof(int): 4, sizeof(short): 2, sizeof(double): 8
+ex.a address: 0xffffe25bbc50
+ex.b address: 0xffffe25bbc54
+ex.c address: 0xffffe25bbc58
+ex.d address: 0xffffe25bbc60
+sizeof(struct align_example): 24
+ex.a address: 0xffffe25bbc60
+ex.b address: 0xffffe25bbc61
+ex.c address: 0xffffe25bbc65
+ex.d address: 0xffffe25bbc67
+sizeof(struct pack_example): 15
+```
+
+In this code, the `#pragma pack` directives instruct the compiler to pack the `struct` members
+without adding padding bytes between them. As the output shows, there is no padding between member
+addresses and the size of `struct pack_example` is the sum of the sizes of its members.
+
+Note that packing `struct`s can lead to reduced performance on some architectures because unaligned
+memory accesses may be slower. For example, if a single memory read/write is aligned at 8-byte
+boundaries and if you pack your memory in a way that a single unit (e.g., an `int` or a `long`)
+crosses a boundary, you may need to perform two memory operations to read/write it instead of one.
+Therefore, packing should be used judiciously, e.g., when memory efficiency is more critical than
+performance.
+
+You can stop recording and submit all the files you created for this assignment including `.record/`
+and `.nvim/`.
