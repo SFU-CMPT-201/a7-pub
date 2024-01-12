@@ -1,9 +1,13 @@
-# Assignment 7: Memory Layout (Continued)
+# Assignment 7: Memory Layout (Continued), Data Types, and Alignment
 
-This assignment continues our discussion on the memory layout. From the diagram below, we covered
-the text segment, the data segment, the BSS segment, and the stack segment in the previous
-assignment. We will cover the kernel address space, the memory mapping segment, and the heap segment
-in this assignment.
+This assignment has two parts---the first part continues the discussion on the memory laout. The
+second part discusses data types and memory alignment.
+
+## Part 0: Memory Layout (Continued)
+
+Let's start with the first part. From the diagram below, we covered the text segment, the data
+segment, the BSS segment, and the stack segment in the previous assignment. We will cover the
+kernel address space, the memory mapping segment, and the heap segment.
 
 ```bash
 .──────────────────────.
@@ -58,7 +62,7 @@ in this assignment.
 '──────────────────────'
 ```
 
-## Kernel Address Space
+### Kernel Address Space
 
 As discussed in the first lecture, a typical operating system operates in two modes---kernel mode
 and user mode. User applications, such as your web browser, terminal, file explorer, etc., all run
@@ -69,7 +73,7 @@ the program with a segmentation fault. Although there is much to be said about t
 space, we will not get into the discussion because the scope of this course is user-level systems
 programming.
 
-## Task 0: Understanding the Memory Mapping Segment
+### Task 0: Understanding the Memory Mapping Segment
 
 Memory mapping is also a big topic and we will discuss it separately later in the semester. For now,
 let's look at one important component in this region, which is shared libraries. If you remember
@@ -119,7 +123,7 @@ As the addresses show, `printf()` is located in between `main()` and `stack_var`
 
 (You can stop recording and come back later, or continue on.)
 
-## Task 1: Understanding the Heap Segment
+### Task 1: Understanding the Heap Segment
 
 *The heap segment* or simply *the heap* is a region of memory used when a program calls memory
 allocation functions. As you may know, there are four popular C standard library functions related
@@ -168,7 +172,7 @@ Here are a few important points about these functions.
 Let's do a few activities to understand the heap more. Make sure you `record` if you are not
 recording already.
 
-### Accessing the Heap
+#### Accessing the Heap
 
 The first important thing to understand regarding the heap is that you need to use a *pointer
 variable* to access the heap, i.e., your access to the heap is *indirect*. This means that you use a
@@ -231,7 +235,7 @@ The visualization of this is the following.
 
 As shown, your access to the heap is via a pointer variable.
 
-### Manual Memory Management and Memory Allocator
+#### Manual Memory Management and Memory Allocator
 
 Using the heap in a C/C++ program is considered *manual* memory management. This is because you need
 to write a piece of code yourself to request memory allocation on the heap (by calling functions
@@ -252,7 +256,7 @@ variables.
 Since you have to manually manage the heap memory, it is extremely easy to make mistakes and manage
 the heap incorrectly. Let's do a few activities to understand this more.
 
-### Memory Leak
+#### Memory Leak
 
 The most common mistake is called *memory leak*, which occurs when you allocate memory on the heap
 but don't deallocate it properly. To understand this more, let's create a file named `memory_leak.c`
@@ -367,7 +371,7 @@ This makes it clear which function needs to take care of buffer allocation, deal
 errors. In the above program, this responsibility is distributed across both `main()` and
 `read_user_input()`, which makes it difficult for a programmer to mentally keep track.
 
-### Use After Free, Double Free, and Null Pointer Dereference
+#### Use After Free, Double Free, and Null Pointer Dereference
 
 *Use after free* refers to a case where you free a previously-allocated memory block and then access
 it again by mistake. *Double free* refers to a case where you free a previously-allocated memory
@@ -418,7 +422,7 @@ You can easily come up with simple examples of double free and null pointer dere
 experiment with those problems and see if our linters and sanitizers can detect those problems. We
 highly encourage you to do so.
 
-## Memory Safety
+### Memory Safety
 
 Generally, all of the problems related to memory we discussed so far are called *memory safety*
 issues. These include stack corruption, buffer overflow, uninitialized variable access, memory leak,
@@ -447,7 +451,7 @@ safety significantly. This is a trade-off---higher-level languages provide conve
 safety at the expense of performance and flexibility. Therefore, when you choose a language for a
 programming task, you need to make a decision based on the features your task requires.
 
-# Assignment 8: Data Types, Alignment, Padding, and Packing
+## Part 1: Data Types, Alignment, Padding, and Packing
 
 One of the trickiest parts of writing low-level programs that directly manipulate memory is that
 often times, you need to think about byte-level details. In the previous assignments, we
@@ -457,7 +461,7 @@ many types of various sizes and also allows you to define your own custom types 
 types are represented in memory and how to use these using pointers. In this assignment, you will
 learn more about this.
 
-## Task 0: Representing Data Types in Memory
+### Task 0: Representing Data Types in Memory
 
 One way to conceptualize a type is to think of it as imposing a structure over *raw bytes*. (We're
 using "structure" in a general sense here, not as a reference to `struct`.) In other words, if you
@@ -632,12 +636,12 @@ avoid it unless it is absolutely necessary. We discuss it here to help you deepe
 of low-level memory manipulation. However, this often leads to brittle code that does not work
 across different platforms or when compiled with different compilers, which the next task discusses.
 
-## Task 1: Alignment, Padding, and Packing
+### Task 1: Alignment, Padding, and Packing
 
 Another important aspect of low-level memory manipulation is memory alignment, padding, and packing,
 particularly related to `struct`s. Let's explore each of these concepts.
 
-### Memory Alignment and Padding
+#### Memory Alignment and Padding
 
 Memory alignment refers to the requirement that certain data types should be stored in memory at
 addresses that are multiples of their size in bytes. This alignment requirement is imposed by
@@ -724,7 +728,7 @@ There are two important implications of this.
   compiler or run the code on a different platform. Thus, it is very important to understand this
   clearly before doing anything with it (e.g., performing byte re-interpretation as we did earlier).
 
-### Packing
+#### Packing
 
 Packing is the process of eliminating or minimizing padding within a `struct` to reduce its size in
 memory. This can be useful in situations where memory efficiency is critical, such as when dealing
