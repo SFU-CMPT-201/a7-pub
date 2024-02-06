@@ -5,7 +5,8 @@ second part discusses data types and memory alignment.
 
 ## Important Note
 
-You should not copy and paste the code examples here. If you do, you ***will not*** get any credit
+You ***should not*** copy and paste the code or command examples here. You have to type them
+yourself and understand the meanings. If you copy and paste, you ***will not*** get any credit
 for this assignment.
 
 ## Part 0: Memory Layout (Continued)
