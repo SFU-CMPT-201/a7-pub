@@ -3,6 +3,11 @@
 This assignment has two parts---the first part continues the discussion on the memory laout. The
 second part discusses data types and memory alignment.
 
+## Important Note
+
+You should not copy and paste the code examples here. If you do, you ***will not*** get any credit
+for this assignment.
+
 ## Part 0: Memory Layout (Continued)
 
 Let's start with the first part. From the diagram below, we covered the text segment, the data
