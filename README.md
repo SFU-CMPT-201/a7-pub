@@ -325,7 +325,7 @@ assigning a new value to a pointer without freeing the memory it previously poin
 Since this is a common problem, `AddressSanitizer` implements checks for it. As usual, you can add
 `-fsanitize=address` as a Clang option to enable it. (Another well-known tool you can use is
 [Valgrind](https://valgrind.org/), but `AddressSanitizer` does similar things and [is often much
-faster](https://shorturl.at/BCL15).) Generally, you should use sanitizers such as
+faster](https://developers.redhat.com/blog/2021/05/05/memory-error-checking-in-c-and-c-comparing-sanitizers-and-valgrind#performance).) Generally, you should use sanitizers such as
 `AddressSanitizer`, `UndefinedBehaviorSanitizer`, `ThreadSanitizer`, when developing software since
 they can detect common and serious problems such as memory leaks. However, remember from earlier
 assignments that sanitizers only detect problems at run time *if they get triggered*. Thus, you also
