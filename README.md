@@ -793,5 +793,22 @@ crosses a boundary, you may need to perform two memory operations to read/write 
 Therefore, packing should be used judiciously, e.g., when memory efficiency is more critical than
 performance.
 
-You can stop recording and submit all the files you created for this assignment including `.record/`
-and `.nvim/`.
+Once everything is done, make sure you stop recording.
+
+## Submission
+
+Make sure you use git to push all the files/directories you created, including `.nvim/` and
+`.record/`, for grading.
+
+As with previous assignments, make sure you run `a7-checker` to check if your work is ready for
+grading. `a7-checker` performs the following.
+* It checks if you have correct recording files. You will receive a 0 if this fails.
+* It checks if you have used `nvim` correctly. You will receive a 0 if this fails.
+* It flags if you have copied and pasted anything. You will receive a 0 if this fails.
+* It performs some basic checks for the tasks above.
+* Note that if a check fails, it does not always tell you why. You need to debug it by yourself
+  and find out.
+* The checker is not a grader but if it says that everything is good and if you are done with
+  the above tasks, you will get the full credit.
+* It is entirely *your responsibility* to run `a7-checker` before submitting your work. If you
+  don't do it, you may get an unexpected grade.
