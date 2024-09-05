@@ -800,16 +800,20 @@ Once everything is done, make sure you stop recording.
 Make sure you use git to push all the files/directories you created, including `.nvim/` and
 `.record/`, for grading.
 
-As with previous assignments, make sure you run `a7-checker` to check if your work is ready for
-grading. `a7-checker` performs the following.
-* It checks if you have correct recording files. You will receive a 0 if this fails.
-* It checks if you have used `nvim` correctly. You will receive a 0 if this fails.
-* It flags if you have copied and pasted anything. You will receive a 0 if this fails.
-* It performs some basic checks for the tasks above.
-* Note that if a check fails, it does not always tell you why. You need to debug it by yourself
-  and find out.
-* The checker is not a grader and it only performs minimum basic checks for you. However, if it says
-  that everything is good, and you have faithfully done the tasks above, you can be assured that you
-  will get the full credit.
-* It is entirely *your responsibility* to run `a7-checker` before submitting your work. If you
-  don't do it, you may get an unexpected grade.
+As with previous assignments, make sure you run `a7-checker` and perform some minimal basic checks.
+A few things to note about the checker:
+* It warns you if you do not have any recording files. Generally, if you do not record your work
+  sessions, you will receive a 0.
+* It warns you if it detects that you have not used `nvim`. Generally, if you do not use `nvim` for
+  your work, you will receive a 0.
+* It warns you if it detects any copy-and-paste actions. Generally, if you copy and paste anything,
+  you will receive a 0.
+* It performs some basic checks for your progress and tells you about it.
+* It is important to understand that the checker is not a grader and only performs minimal basic
+  checks for you. We only provide it to make sure that you do not make any silly mistakes that could
+  lead to an unexpected grade, e.g., a 0 or a very low grade. However, if it says that everything is
+  good, and you have faithfully done the tasks above, you can be assured that you will get the full
+  credit.
+* Note that if a check fails, it does not always tell you why. You need to debug it by yourself and
+  find out.
+* It is entirely *your responsibility* to run `a7-checker` before submitting your work.
