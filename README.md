@@ -808,7 +808,8 @@ grading. `a7-checker` performs the following.
 * It performs some basic checks for the tasks above.
 * Note that if a check fails, it does not always tell you why. You need to debug it by yourself
   and find out.
-* The checker is not a grader but if it says that everything is good and if you are done with
-  the above tasks, you will get the full credit.
+* The checker is not a grader and it only performs minimum basic checks for you. However, if it says
+  that everything is good, and you have faithfully done the tasks above, you can be assured that you
+  will get the full credit.
 * It is entirely *your responsibility* to run `a7-checker` before submitting your work. If you
   don't do it, you may get an unexpected grade.
